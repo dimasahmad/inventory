@@ -1,0 +1,30 @@
+<h1>Item(s)</h1>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">ID</th>
+      <th scope="col">Name</th>
+      <th scope="col">Condition</th>
+      <th scope="col">Photo</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#if item}}
+      <tr>
+          <td>{{item.id}}</td>
+          <td>{{item.name}}</td>
+          <td>{{item.condition}}</td>
+          <td><a href="{{item.photo}}" target="_blank"><img src="{{item.photo}}" width="300" /></a></td>
+        </tr>
+    {{else}}
+      {{#each items}}
+        <tr>
+          <td><a href="/items/{{this.id}}">{{this.id}}</a></td>
+          <td>{{this.name}}</td>
+          <td>{{this.condition}}</td>
+          <td><a href="{{this.photo}}" target="_blank"><img src="{{this.photo}}" width="300" /></a></td>
+        </tr>
+      {{/each}}
+    {{/if}}
+  </tbody>
+</table>

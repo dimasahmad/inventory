@@ -1,14 +1,21 @@
 require('dotenv').config();
+var debug = require('debug')('inventory:app');
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
+var FileStore = require('session-file-store')(session);
 var flash = require('connect-flash');
 var passport = require('passport');
 var OIDCStrategy = require('passport-azure-ad').OIDCStrategy;
 var graph = require('./graph');
+var assets = require('./assets');
+
+var fileStoreOptions = {
+  path: './.data/sessions'
+};
 
 // Configure simple-oauth2
 const oauth2 = require('simple-oauth2').create({
@@ -39,6 +46,7 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(id, done) {
+  debug('deserializeUser ' + id);
   done(null, users[id]);
 });
 
@@ -89,6 +97,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var authRouter = require('./routes/auth');
 var calendarRouter = require('./routes/calendar');
+var itemsRouter = require('./routes/items');
 
 var app = express();
 
@@ -96,7 +105,8 @@ var app = express();
 // NOTE: Uses default in-memory session store, which is not
 // suitable for production
 app.use(session({
-  secret: 'your_secret_value_here',
+  // store: new FileStore(fileStoreOptions),
+  secret: process.env.APP_SECRET,
   resave: false,
   saveUninitialized: false,
   unset: 'destroy'
@@ -138,6 +148,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use("/assets", assets);
+
 // Initialize passport
 app.use(passport.initialize());
 app.use(passport.session());
@@ -155,6 +167,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/auth', authRouter);
 app.use('/calendar', calendarRouter);
+app.use('/items', itemsRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
